@@ -17,9 +17,30 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/admin/categories', 'Admin\CategoriesController@index')->name('admin.categories.index');
-Route::get('/admin/categories/create', 'Admin\CategoriesController@create')->name('admin.categories.create');
-Route::post('/admin/categories', 'Admin\CategoriesController@store')->name('admin.categories.store');
-Route::get('/admin/categories/{id}', 'Admin\CategoriesController@edit')->name('admin.categories.edit');
-Route::put('/admin/categories/{id}', 'Admin\CategoriesController@update')->name('admin.categories.update');
-Route::delete('/admin/categories/{id}', 'Admin\CategoriesController@destroy')->name('admin.categories.destroy');
+Route::group([
+    'prefix' => '/admin',
+    'namespace' => 'Admin',
+    'as' => 'admin.'
+], function() {
+
+    Route::group([
+        'prefix' => '/categories',
+        'as' => 'categories.',
+    ], function() {
+        
+        Route::get('/', 'CategoriesController@index')->name('index');
+        Route::get('/create', 'CategoriesController@create')->name('create');
+        Route::post('/', 'CategoriesController@store')->name('store');
+        Route::get('/{id}', 'CategoriesController@edit')->name('edit');
+        Route::put('/{id}', 'CategoriesController@update')->name('update');
+        Route::delete('/{id}', 'CategoriesController@destroy')->name('destroy');
+    });
+    
+    Route::resource('/posts', 'PostsController')->names([
+        //'index' => 'admin.posts.index',
+        //'show' => 'admin.posts.create',
+    ]);
+
+    Route::get('/posts/{id}/download', 'PostsController@download')->name('posts.download');
+
+});
