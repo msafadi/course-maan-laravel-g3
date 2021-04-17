@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -16,7 +17,15 @@ class CategoriesController extends Controller
     public function index()
     {
         // Collection (imagine as array)
-        $categories = Category::all();
+        $categories = Category::leftJoin('categories as parent', 'parent.id', '=', 'categories.parent_id')
+            ->select([
+                'categories.*',
+                'parent.name as parent_name',
+                DB::raw('(SELECT COUNT(*) FROM posts WHERE posts.category_id = categories.id) as products_count'),
+            ])
+            //->selectRaw('(SELECT COUNT(*) FROM posts WHERE posts.category_id = categories.id) as products_count')
+            ->orderBy('name', 'ASC')
+            ->paginate(5);
 
         return view('admin.categories.index', [
             'categories' => $categories,

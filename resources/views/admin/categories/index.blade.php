@@ -18,6 +18,7 @@
                 <th>Name</th>
                 <th>Slug</th>
                 <th>Parent</th>
+                <th>Products #</th>
                 <th>Created At</th>
                 <th></th>
                 <th></th>
@@ -31,7 +32,8 @@
                 <td>{{ $category->id }}</td>
                 <td>{{ $category->name }}</td>
                 <td>{{ $category->slug }}</td>
-                <td>{{ $category->parent_id }}</td>
+                <td>{{ $category->parent_name }}</td>
+                <td>{{ $category->products_count }}</td>
                 <td>{{ $category->created_at }}</td>
                 <td><a href="{{ route('admin.categories.edit', [$category->id]) }}" class="btn btn-sm btn-outline-success">Edit</a></td>
                 <td><form action="{{ route('admin.categories.destroy', [$category->id]) }}" method="post">
@@ -48,6 +50,6 @@
             @endif
         </tbody>
     </table>
-
+    {{ $categories->links() }}
 </x-admin-layout>
 

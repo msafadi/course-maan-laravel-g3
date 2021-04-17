@@ -36,11 +36,18 @@ Route::group([
         Route::delete('/{id}', 'CategoriesController@destroy')->name('destroy');
     });
     
+    Route::get('/posts/trash', 'PostsController@trash')->name('posts.trash');
+    Route::put('/posts/{id}/restore', 'PostsController@restore')->name('posts.restore');
+    Route::delete('/posts/{id}/force-delete', 'PostsController@forceDelete')->name('posts.force-delete');
+
+    Route::get('/posts/{id}/download', 'PostsController@download')->name('posts.download');
     Route::resource('/posts', 'PostsController')->names([
         //'index' => 'admin.posts.index',
         //'show' => 'admin.posts.create',
     ]);
 
-    Route::get('/posts/{id}/download', 'PostsController@download')->name('posts.download');
-
 });
+
+
+Route::get('/posts', 'PostsController@index')->name('posts');
+Route::get('/posts/{id}', 'PostsController@show')->name('posts.show');

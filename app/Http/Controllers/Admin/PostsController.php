@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Post;
+use App\Models\Scopes\PublishedScope;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -18,9 +19,19 @@ class PostsController extends Controller
      */
     public function index()
     {
-        $posts = Post::all();
+        $posts = Post::withoutGlobalScope(PublishedScope::class)
+            ->leftJoin('categories', 'categories.id', '=', 'posts.category_id')
+            ->select([
+                'posts.*',
+                'categories.name as category_name'
+            ])
+            //->orderBy('created_at', 'DESC')
+            ->latest()
+            ->paginate();
+
         return view('admin.posts.index', [
-            'posts' => $posts
+            'posts' => $posts,
+            'total_posts' => Post::count(),
         ]);
     }
 
@@ -65,7 +76,7 @@ class PostsController extends Controller
 
         $post = Post::create([
             'title' => $request->post('title'),
-            'slug' => Str::slug($request->post('title')),
+            //'slug' => Str::slug($request->post('title')),
             'content' => $request->post('content'),
             'category_id' => $request->post('category_id'),
             'image' => $image_path,
@@ -82,6 +93,7 @@ class PostsController extends Controller
      */
     public function show($id)
     {
+        dd($id);
         $post = Post::findOrFail($id);
         return view('admin.posts.show', [
             'post' => $post,
@@ -96,7 +108,7 @@ class PostsController extends Controller
      */
     public function edit($id)
     {
-        $post = Post::findOrFail($id);
+        $post = Post::withTrashed()->withoutGlobalScope('published')->findOrFail($id);
         return view('admin.posts.edit', [
             'post' => $post,
             'categories' => Category::all(),
@@ -114,7 +126,7 @@ class PostsController extends Controller
     {
         $request->validate( $this->rules() );
 
-        $post = Post::findOrFail($id);
+        $post = Post::withoutGlobalScope('published')->findOrFail($id);
 
         $image_path = null;
         $old_image = $post->image;
@@ -130,7 +142,7 @@ class PostsController extends Controller
 
         $post->update([
             'title' => $request->post('title'),
-            'slug' => Str::slug($request->post('title')),
+            //'slug' => Str::slug($request->post('title')),
             'content' => $request->post('content'),
             'category_id' => $request->post('category_id'),
             'image' => $image_path? $image_path : $post->image,
@@ -151,12 +163,12 @@ class PostsController extends Controller
      */
     public function destroy($id)
     {
-        $post = Post::findOrFail($id);
+        $post = Post::withoutGlobalScope('published')->findOrFail($id);
         $post->delete();
 
-        if ($post->image) {
+        /*if ($post->image) {
             Storage::disk('public')->delete($post->image);
-        }
+        }*/
 
         return redirect()->route('admin.posts.index')->with('success', 'Post deleted.');
     }
@@ -175,9 +187,37 @@ class PostsController extends Controller
     {
         return [
             'title' => 'required|string|max:255',
-            'category_id' => 'required|int|exists:categories,id',
+            'category_id' => 'nullable|int|exists:categories,id',
             'content' => 'required',
             'image' => 'image|max:409600'
         ];
+    }
+    
+    public function trash()
+    {
+        $posts = Post::onlyTrashed()->paginate();
+        return view('admin.posts.trash', [
+            'posts' => $posts,
+        ]);
+    }
+
+    public function restore($id)
+    {
+        $post = Post::onlyTrashed()->findOrFail($id);
+        $post->restore();
+
+        return redirect()->route('admin.posts.index')->with('success', 'Post restored.');
+    }
+
+    public function forceDelete($id)
+    {
+        $post = Post::withTrashed()->findOrFail($id);
+        $post->forceDelete();
+
+        /*if ($post->image) {
+            Storage::disk('public')->delete($post->image);
+        }*/
+
+        return redirect()->route('admin.posts.index')->with('success', 'Post force deleted.');
     }
 }
