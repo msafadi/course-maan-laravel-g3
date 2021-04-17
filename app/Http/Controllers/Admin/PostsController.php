@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Post;
 use App\Models\Scopes\PublishedScope;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -45,6 +46,8 @@ class PostsController extends Controller
         return view('admin.posts.create', [
             'post' => new Post(),
             'categories' => Category::all(),
+            'tags' => Tag::all(),
+            'post_tags' => [],
         ]);
     }
 
@@ -82,6 +85,8 @@ class PostsController extends Controller
             'image' => $image_path,
         ]);
 
+        $post->tags()->attach($request->post('tag'));
+
         return redirect()->route('admin.posts.index')->with('success', 'Post created');
     }
 
@@ -93,7 +98,6 @@ class PostsController extends Controller
      */
     public function show($id)
     {
-        dd($id);
         $post = Post::findOrFail($id);
         return view('admin.posts.show', [
             'post' => $post,
@@ -109,9 +113,14 @@ class PostsController extends Controller
     public function edit($id)
     {
         $post = Post::withTrashed()->withoutGlobalScope('published')->findOrFail($id);
+
+        $post_tags = $post->tags()->pluck('id')->toArray();
+
         return view('admin.posts.edit', [
             'post' => $post,
             'categories' => Category::all(),
+            'tags' => Tag::all(),
+            'post_tags' => $post_tags,
         ]);
     }
 
@@ -151,6 +160,8 @@ class PostsController extends Controller
         if ($image_path && !empty($old_image)) {
             Storage::disk('public')->delete($old_image);
         }
+
+        $post->tags()->sync($request->post('tag'));
 
         return redirect()->route('admin.posts.index')->with('success', 'Post updated.');
     }

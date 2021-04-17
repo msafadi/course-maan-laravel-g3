@@ -51,3 +51,6 @@ Route::group([
 
 Route::get('/posts', 'PostsController@index')->name('posts');
 Route::get('/posts/{id}', 'PostsController@show')->name('posts.show');
+
+Route::get('/categories', 'CategoriesController@index')->name('categories');
+Route::get('/categories/{id}', 'CategoriesController@show')->name('categories.show');

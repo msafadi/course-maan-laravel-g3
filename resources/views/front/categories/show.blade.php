@@ -7,17 +7,16 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Posts</h1>
-        @foreach ($posts as $post)
-        <article>
-            <h3><a href="{{ route('posts.show', [$post->id]) }}">{{ $post->title }}</a></h3>
-            <p>Category: {{ $post->category->name }}</p>
-            {{-- $category = Category::where('id', '=', $post->category_id)->first() --}}
+    <h1>{{ $category->name }}</h1>
 
+        $category->posts = Post::where('category_id', '=', $category->id)->get()
+
+        @foreach($category->posts as $post)
+        <article>
+            <h3>{{ $post->title }}</h3>
             <p>{{ $post->content }}</p>
         </article>
         <hr>
         @endforeach
-    </ul>
 </body>
 </html>

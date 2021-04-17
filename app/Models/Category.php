@@ -20,4 +20,24 @@ class Category extends Model
     public $incrementing = true;
 
     public $timestamps = true;
+
+    // One-to-Many (One Category has many Posts)
+    public function posts()
+    {
+        return $this->hasMany(
+            Post::class    // Related model 
+        //    'category_id',  // FK in the related model
+        //    'id'            // PK in the current model
+        );
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Category::class, 'parent_id', 'id');
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Category::class, 'parent_id', 'id')->withDefault();
+    }
 }

@@ -42,5 +42,16 @@
     @enderror
 </div>
 <div class="form-group">
+    <label for="">Tags</label>
+    <div>
+        @foreach($tags as $tag)
+        <label for="" class="d-inline-block mx-2">
+            <input type="checkbox" name="tag[]" value="{{ $tag->id }}" @if(in_array($tag->id, $post_tags)) checked @endif>
+            {{ $tag->name }}
+        </label>
+        @endforeach
+    </div>
+</div>
+<div class="form-group">
     <button type="submit" class="btn btn-primary">Save</button>
 </div> 

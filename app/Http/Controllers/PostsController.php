@@ -9,7 +9,11 @@ class PostsController extends Controller
 {
     public function index()
     {
-        $posts = Post::paginate();
+        // Eager loading
+        // SELECT * FROM posts
+        // SELECT * FROM categories WHERE id IN (1,2,3)
+        $posts = Post::with('category')->paginate(15);
+
         return view('front.posts.index', [
             'posts' => $posts,
         ]);

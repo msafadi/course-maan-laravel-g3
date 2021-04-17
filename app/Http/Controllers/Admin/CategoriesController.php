@@ -17,7 +17,7 @@ class CategoriesController extends Controller
     public function index()
     {
         // Collection (imagine as array)
-        $categories = Category::leftJoin('categories as parent', 'parent.id', '=', 'categories.parent_id')
+        /*$categories = Category::leftJoin('categories as parent', 'parent.id', '=', 'categories.parent_id')
             ->select([
                 'categories.*',
                 'parent.name as parent_name',
@@ -25,7 +25,12 @@ class CategoriesController extends Controller
             ])
             //->selectRaw('(SELECT COUNT(*) FROM posts WHERE posts.category_id = categories.id) as products_count')
             ->orderBy('name', 'ASC')
-            ->paginate(5);
+            ->paginate(5);*/
+
+        $categories = Category::with('parent')->withCount('posts as posts_no')
+                ->withCount('children')
+                ->orderBy('name', 'ASC')
+                ->paginate(5);
 
         return view('admin.categories.index', [
             'categories' => $categories,
